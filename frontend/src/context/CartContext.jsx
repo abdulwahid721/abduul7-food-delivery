@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 const CartContext = createContext();
 
@@ -40,17 +41,21 @@ export function CartProvider({ children }) {
     return () => clearTimeout(t);
   }, [toast]);
 
-  // Order progression simulation
+  // Live Order Status Sync from Database
   useEffect(() => {
     if (!activeOrder || activeOrder.status === 'delivered') return;
-    const stages = ['placed', 'confirmed', 'preparing', 'on_the_way', 'delivered'];
-    const idx = stages.indexOf(activeOrder.status);
-    if (idx >= 0 && idx < stages.length - 1) {
-      const timer = setTimeout(() => {
-        setActiveOrder((prev) => (prev ? { ...prev, status: stages[idx + 1] } : null));
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
+
+    const interval = setInterval(async () => {
+      try {
+        const orderNumber = activeOrder.orderNumber || activeOrder.order_number;
+        const live = await api.trackOrder(orderNumber);
+        if (live && live.status && live.status !== activeOrder.status) {
+          setActiveOrder((prev) => (prev ? { ...prev, status: live.status } : null));
+        }
+      } catch (e) {}
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [activeOrder]);
 
   const showToast = (msg) => setToast(msg);
@@ -93,10 +98,12 @@ export function CartProvider({ children }) {
   const tax = Math.round(subtotal * 0.15); // 15% VAT
   const total = subtotal + deliveryFee + tax;
 
-  const placeOrder = (details) => {
-    const order = {
+  const placeOrder = async (details) => {
+    const fallbackNumber = `ET-${Math.floor(100000 + Math.random() * 900000)}`;
+    const newOrder = {
       id: `ORD-${Date.now()}`,
-      orderNumber: `ET-${Math.floor(100000 + Math.random() * 900000)}`,
+      orderNumber: fallbackNumber,
+      order_number: fallbackNumber,
       items: [...items],
       subtotal,
       deliveryFee,
@@ -104,6 +111,7 @@ export function CartProvider({ children }) {
       total,
       customerName: details.customerName,
       phone: details.phone,
+      subcity: details.subcity,
       address: details.address,
       paymentMethod: details.paymentMethod,
       status: 'placed',
@@ -111,11 +119,35 @@ export function CartProvider({ children }) {
       driverName: 'ዳዊት ታደሰ (Dawit Tadesse)',
       driverPhone: '+251 91 123 4567',
     };
-    setActiveOrder(order);
+
+    // Attempt to save in PostgreSQL database via API
+    try {
+      const saved = await api.placeOrder({
+        customerName: details.customerName,
+        phone: details.phone,
+        subcity: details.subcity,
+        address: details.address,
+        paymentMethod: details.paymentMethod,
+        items,
+        subtotal,
+        deliveryFee,
+        tax,
+        total,
+      });
+      if (saved && (saved.orderNumber || saved.order_number)) {
+        newOrder.id = saved.id || newOrder.id;
+        newOrder.orderNumber = saved.orderNumber || saved.order_number;
+        newOrder.order_number = saved.orderNumber || saved.order_number;
+      }
+    } catch (e) {
+      console.warn('Saved order locally as fallback');
+    }
+
+    setActiveOrder(newOrder);
     clearCart();
     setIsCheckoutOpen(false);
     setIsTrackerOpen(true);
-    return order;
+    return newOrder;
   };
 
   return (

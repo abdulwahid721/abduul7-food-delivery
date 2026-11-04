@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import RestaurantCard from './components/RestaurantCard';
@@ -6,19 +6,47 @@ import FoodCard from './components/FoodCard';
 import CartDrawer from './components/CartDrawer';
 import CheckoutModal from './components/CheckoutModal';
 import OrderTrackerModal from './components/OrderTrackerModal';
+import AuthModal from './components/AuthModal';
+import AdminModal from './components/AdminModal';
 import Footer from './components/Footer';
-import { RESTAURANTS, FOODS } from './data/mockData';
+import { RESTAURANTS as initialRestaurants, FOODS as initialFoods } from './data/mockData';
+import { api } from './services/api';
 import { useCart } from './context/CartContext';
 import { Search, Utensils, Sparkles, Filter, X } from 'lucide-react';
 
 export default function App() {
   const { toast } = useCart();
+  const [restaurantsList, setRestaurantsList] = useState(initialRestaurants);
+  const [foodsList, setFoodsList] = useState(initialFoods);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
   const restaurantsRef = useRef(null);
   const menuRef = useRef(null);
+
+  // Load live data from Supabase backend
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [rData, fData, uData] = await Promise.all([
+          api.getRestaurants(),
+          api.getFoods(),
+          api.getCurrentUser(),
+        ]);
+        if (rData && rData.length > 0) setRestaurantsList(rData);
+        if (fData && fData.length > 0) setFoodsList(fData);
+        if (uData) setCurrentUser(uData);
+      } catch (e) {
+        console.error('Data loading error:', e);
+      }
+    }
+    loadData();
+  }, []);
 
   const scrollToRestaurants = () => {
     restaurantsRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -40,9 +68,10 @@ export default function App() {
   };
 
   const filteredFoods = useMemo(() => {
-    return FOODS.filter((food) => {
+    return foodsList.filter((food) => {
+      const restId = food.restaurantId || food.restaurant_id;
       // Restaurant filter
-      if (selectedRestaurantId && food.restaurantId !== selectedRestaurantId) {
+      if (selectedRestaurantId && restId !== selectedRestaurantId) {
         return false;
       }
       // Category filter
@@ -52,18 +81,18 @@ export default function App() {
       // Search filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const matchesName = food.name.toLowerCase().includes(q);
-        const matchesAmharic = food.amharicName?.toLowerCase().includes(q);
-        const matchesRest = food.restaurantName.toLowerCase().includes(q);
-        const matchesDesc = food.description.toLowerCase().includes(q);
-        const matchesCat = food.category.toLowerCase().includes(q);
+        const matchesName = food.name?.toLowerCase().includes(q);
+        const matchesAmharic = (food.amharicName || food.amharic_name)?.toLowerCase().includes(q);
+        const matchesRest = (food.restaurantName || food.restaurant_name)?.toLowerCase().includes(q);
+        const matchesDesc = food.description?.toLowerCase().includes(q);
+        const matchesCat = food.category?.toLowerCase().includes(q);
         return matchesName || matchesAmharic || matchesRest || matchesDesc || matchesCat;
       }
       return true;
     });
-  }, [selectedRestaurantId, activeCategory, searchQuery]);
+  }, [foodsList, selectedRestaurantId, activeCategory, searchQuery]);
 
-  const selectedRestaurant = RESTAURANTS.find((r) => r.id === selectedRestaurantId);
+  const selectedRestaurant = restaurantsList.find((r) => r.id === selectedRestaurantId);
 
   return (
     <div className="min-h-screen bg-[#faf8f5] text-stone-900 flex flex-col font-sans antialiased">
@@ -77,6 +106,9 @@ export default function App() {
 
       {/* Deliver Addis Navigation Header */}
       <Navbar
+        currentUser={currentUser}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAdmin={() => setIsAdminOpen(true)}
         onScrollToRestaurants={scrollToRestaurants}
         onFilterDrinks={() => {
           setSelectedRestaurantId(null);
@@ -142,7 +174,7 @@ export default function App() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {RESTAURANTS.map((restaurant) => (
+            {restaurantsList.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
                 restaurant={restaurant}
@@ -271,6 +303,21 @@ export default function App() {
 
       {/* Live Order Tracker Modal */}
       <OrderTrackerModal />
+
+      {/* Authentication Modal (Login / Register / Profile) */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        user={currentUser}
+        onUserChange={setCurrentUser}
+        onOpenAdmin={() => setIsAdminOpen(true)}
+      />
+
+      {/* Admin Order Control Panel Modal */}
+      <AdminModal
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+      />
 
       {/* Deliver Addis Footer */}
       <Footer />

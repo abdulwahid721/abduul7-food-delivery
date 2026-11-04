@@ -2,7 +2,7 @@ import React from 'react';
 import { useCart } from '../context/CartContext';
 import { Bike, ShoppingBag, Utensils, Wine, Store, User } from 'lucide-react';
 
-export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilterMarket }) {
+export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilterMarket, currentUser, onOpenAuth, onOpenAdmin }) {
   const { items, setIsCartOpen, activeOrder, setIsTrackerOpen, subtotal } = useCart();
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -74,13 +74,25 @@ export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilter
               </button>
             )}
 
-            {/* Login / Orders */}
+            {/* Admin Dashboard Pill if admin */}
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={onOpenAdmin}
+                className="hidden sm:flex items-center gap-1 text-[11px] font-bold bg-amber-400 text-stone-900 px-2.5 py-1 rounded-full shadow-xs hover:bg-amber-300 transition"
+              >
+                <span>🛡️ Admin Panel</span>
+              </button>
+            )}
+
+            {/* Login / Orders / User Profile */}
             <button
-              onClick={() => setIsCartOpen(true)}
-              className="hidden sm:flex items-center gap-1 text-xs font-semibold hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition"
+              onClick={onOpenAuth}
+              className="flex items-center gap-1.5 text-xs font-semibold hover:bg-white/10 px-2.5 py-1.5 rounded-lg transition"
             >
               <User className="w-3.5 h-3.5" />
-              <span>Login / Orders</span>
+              <span className="truncate max-w-[100px] sm:max-w-[130px]">
+                {currentUser ? currentUser.name.split(' ')[0] : 'Sign In'}
+              </span>
             </button>
 
             {/* Cart Button */}
