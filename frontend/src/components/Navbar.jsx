@@ -11,20 +11,24 @@ export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilter
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
           
-          {/* Deliver Addis Circular Logo */}
+          {/* Abduul Circular Logo & Brand */}
           <div className="flex items-center gap-4">
             <a href="#" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#a61919] border-2 border-white/90 shadow-sm flex flex-col items-center justify-center text-white transition-transform group-hover:scale-105 shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#871212] border-2 border-white/95 shadow-md flex flex-col items-center justify-center text-white transition-transform group-hover:scale-105 shrink-0">
                 <Bike className="w-4 h-4 text-white -mb-0.5" />
-                <span className="text-[7px] font-black tracking-tight uppercase leading-tight">Deliver</span>
-                <span className="text-[8px] font-black tracking-wider uppercase leading-none">Addis</span>
+                <span className="text-[9px] font-black tracking-tight uppercase leading-none">Abduul</span>
               </div>
-              <div className="hidden lg:flex flex-col">
-                <span className="text-base font-black tracking-tight text-white leading-tight">
-                  Deliver Addis
-                </span>
-                <span className="text-[10px] text-red-100/80 font-medium">
-                  Addis Ababa Food Delivery
+              <div className="flex flex-col">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg sm:text-xl font-black tracking-tight text-white leading-tight">
+                    Abduul
+                  </span>
+                  <span className="hidden sm:inline-block bg-white/20 text-white text-[10px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider">
+                    Addis
+                  </span>
+                </div>
+                <span className="hidden md:block text-[10px] text-red-100/80 font-medium">
+                  Real Addis Ababa Restaurants Delivery
                 </span>
               </div>
             </a>
@@ -44,7 +48,7 @@ export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilter
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/10 transition"
               >
                 <Wine className="w-3.5 h-3.5" />
-                <span>Drinks</span>
+                <span>Drinks &amp; Tej</span>
               </button>
 
               <button
@@ -52,7 +56,7 @@ export default function Navbar({ onScrollToRestaurants, onFilterDrinks, onFilter
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-white/10 transition"
               >
                 <Store className="w-3.5 h-3.5" />
-                <span>Market</span>
+                <span>The Market</span>
               </button>
             </nav>
           </div>

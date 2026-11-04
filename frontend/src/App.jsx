@@ -28,7 +28,7 @@ export default function App() {
     menuRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const categories = ['All', 'Traditional', 'Fasting', 'Pasta & Pizza', 'Burgers'];
+  const categories = ['All', 'Traditional', 'Fasting', 'Pasta & Pizza', 'Burgers', 'Drinks & Market'];
 
   const handleSelectRestaurant = (id) => {
     if (selectedRestaurantId === id) {
@@ -116,10 +116,10 @@ export default function App() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
-                Featured Restaurants
+                Featured Addis Ababa Restaurants
               </h2>
               <p className="text-xs text-stone-500">
-                Handpicked popular places delivering right to your door
+                Real, authentic Addis Ababa restaurants delivering right to your door
               </p>
             </div>
 
@@ -204,6 +204,7 @@ export default function App() {
                   {cat === 'Fasting' && '🥗 '}
                   {cat === 'Pasta & Pizza' && '🍕 '}
                   {cat === 'Burgers' && '🍔 '}
+                  {cat === 'Drinks & Market' && '🍷 '}
                   {cat}
                 </button>
               );

@@ -13,7 +13,7 @@ export function CartProvider({ children }) {
   // Load active order on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('deliveraddis_order');
+      const saved = localStorage.getItem('abduul_order');
       if (saved) setActiveOrder(JSON.parse(saved));
     } catch (e) {
       console.error(e);
@@ -24,9 +24,9 @@ export function CartProvider({ children }) {
   useEffect(() => {
     try {
       if (activeOrder) {
-        localStorage.setItem('deliveraddis_order', JSON.stringify(activeOrder));
+        localStorage.setItem('abduul_order', JSON.stringify(activeOrder));
       } else {
-        localStorage.removeItem('deliveraddis_order');
+        localStorage.removeItem('abduul_order');
       }
     } catch (e) {
       console.error(e);

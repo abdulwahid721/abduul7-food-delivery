@@ -1,36 +1,38 @@
-# 🚴 Deliver Addis Clone - Ethiopian Food Delivery Platform
+# 🚴 Abduul — Authentic Addis Ababa Food Delivery Platform
 
-An Ethiopian food delivery web application built with **React**, **Vite**, **Tailwind CSS**, and **Node.js Express**, inspired directly by [Deliver Addis](https://deliveraddis.com).
+An Ethiopian food delivery web application built with **React**, **Vite**, **Tailwind CSS**, and **Node.js Express**, featuring real top restaurants found across Addis Ababa.
 
 ---
 
 ## ✨ Features
 
-- **Deliver Addis Navigation Bar**: Deliver Addis crimson red header (`#a61919`), circular scooter delivery badge, quick links (Restaurants, Drinks, Market), and live basket pill.
-- **Hero Section**: Exact Deliver Addis hero matching the design:
+- **Brand: Abduul**:
+  - Distinctive crimson red navigation header (`#a61919`) with the circular **Abduul** scooter delivery badge.
+  - Active basket counter in real-time Ethiopian Birr (`ብር` / ETB).
+- **Hero Section**:
   - *"Get food from your favorite restaurants in Addis delivered to your home or office."*
-  - Dual action buttons: *See restaurants near you*, *View all of our restaurants*, *The Market: Groceries & more*, *Drinks: Wines, Beers, Spirits, etc.*
-- **Featured Restaurants (Matching Screenshot)**:
-  - **VillaVerde BISTRO (Bisrate Gebriel Branch)** with promo badge `🏷️ For Every Pizza Order Get 1 Free Coca Cola !!!`
-  - **Abyssinia Flavors (Summit)** with authentic **Gurage Kitfo**
-  - **Soka Sport Bar & BBQ (Bole Atlas)** with smash burgers and BBQ
-  - **Habesha 2000 Cultural Restaurant** with sizzling **Shekla Tibs** & **Doro Wat**
-- **Dishes & Menu Catalog**:
-  - Compact dish photo cards ("minimized pp", 16:9 ratio)
-  - English & Amharic dish names (e.g. *ልዩ የጉራጌ ክትፎ*, *የሸክላ ጥብስ*, *የጾም በያይነቱ*)
-  - Prices in Ethiopian Birr (`ብር` / ETB)
-  - Category filters: *All*, *Traditional 🇪🇹*, *Fasting 🥗*, *Pasta & Pizza 🍕*, *Burgers 🍔*
-  - Live search by dish or restaurant name
+  - Dual action buttons: *See restaurants near you*, *View all of our restaurants*, *The Market: Groceries & more*, *Drinks: Tej, Wines, Beers & Spirits*.
+- **Real Addis Ababa Restaurants**:
+  1. **Totot Traditional Restaurant (ጦጦት የባህል አዳራሽ)** — *Gerji Branch*: Renowned Gurage Kitfo prepared with spiced herbal niter kibbeh, fresh kocho, and homemade ayib.
+  2. **Kategna Restaurant (ካትኛ የባህል ምግብ ቤት)** — *Bole Medhanialem & Sarbet*: Famous clay-dish Derek Tibs, Bozena Shiro Tegabino, and royal Fasting Beyaynetu.
+  3. **Yod Abyssinia Cultural Restaurant (ዮድ አቢሲኒያ)** — *Bole*: Heritage cultural meals, traditional Doro Wat simmered for hours, and grand Mahberawi feasts.
+  4. **Effoi Pizza (እፎይ ፒዛ)** — *Bole Atlas & Kazanchis*: Addis Ababa’s artisanal stone-oven pizzas (Desta Siga Pizza, Minchet Abish Pizza).
+  5. **Moyos Burger (ሞዮስ በርገር)** — *Bole & Sarbet*: Smashed 100% prime beef patties, melted cheddar, and loaded fries.
+  6. **Ristorante Castelli (ካስቴሊ)** — *Historic Piazza (Est. 1948)*: Legendary Italian fine dining, baked lasagna al forno, and handmade ravioli.
+  7. **Bait Al Mandi (ቤት አል መንዲ)** — *Bole Olympia*: Slow-roasted fragrant lamb mandi, charcoal chicken madhbi, and Yemeni soups.
+- **Authentic Dishes & Real Menu**:
+  - Real Amharic names (e.g. *ልዩ የጉራጌ ክትፎ*, *ካትኛ ደረቅ ጥብስ*, *የሀገር ቤት ዶሮ ወጥ*, *የጾም በያይነቱ*, *እፎይ ደስታ ፒዛ*, *ሞዮስ ድርብ ስማሽ በርገር*).
+  - Accurate pricing in Ethiopian Birr (`ብር`).
+  - Minimized compact photos (16:9 ratio, `h-36 sm:h-40`).
 - **Interactive Cart & Drawer**:
-  - Add/remove items with instant quantity adjustment
-  - Subtotal, 15% VAT, and delivery fee calculation
-- **Checkout Modal**:
-  - Delivery location selection across Addis Ababa (*Bole Medhanialem*, *Bisrate Gebriel*, *Summit*, *Bole Atlas*, *Kazanchis*, *Sarbet*, *CMC*, etc.)
-  - Payment options: **Telebirr**, **CBE Birr**, and **Cash on Delivery**
-  - Confetti celebration on order placement
+  - Instant quantity modification, item removal, and subtotal + 15% VAT calculation.
+- **Addis Delivery & Checkout**:
+  - Locations across Addis Ababa (*Bole Medhanialem*, *Gerji*, *Sarbet*, *Piazza*, *Atlas*, *Kazanchis*, *Summit*, etc.).
+  - Payment via **Telebirr**, **CBE Birr**, or **Cash on Delivery**.
+  - Confetti celebration on order placement.
 - **Live Order Tracker**:
-  - Real-time order progress simulation (*Order Placed* ➔ *Confirmed* ➔ *In Kitchen* ➔ *On The Way* ➔ *Delivered*)
-  - Dedicated courier contact (*ዳዊት ታደሰ / Dawit Tadesse*)
+  - Order progression simulation (*Placed* ➔ *Confirmed* ➔ *In Kitchen* ➔ *On The Way* ➔ *Delivered*).
+  - Assigned courier contact (*ዳዊት ታደሰ / Dawit Tadesse*, `+251 91 123 4567`).
 
 ---
 
@@ -56,26 +58,8 @@ Open your browser at [http://localhost:3000](http://localhost:3000).
 
 ## 🌐 How to Deploy to Vercel
 
-### Option A: Deploy via GitHub (Recommended - 1 Click)
-1. Push this project to your GitHub repository:
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: Deliver Addis clone complete"
-   git remote add origin https://github.com/<your-username>/deliver-addis.git
-   git branch -M main
-   git push -u origin main
-   ```
-2. Go to [vercel.com](https://vercel.com) and log in.
-3. Click **"Add New..."** > **"Project"**.
-4. Select your `deliver-addis` repository.
-5. In **Root Directory**, click **Edit** and choose `frontend` (or leave default root with the included `vercel.json`).
-6. Click **Deploy**! Your site is live on `https://your-app.vercel.app` in ~30 seconds.
-
-### Option B: Deploy via Vercel CLI
-```bash
-cd frontend
-npm install -g vercel
-vercel
+```powershell
+cd C:\Users\abd\.gemini\antigravity\scratch\food-delivery
+git push -u origin main
 ```
-Follow the CLI prompts to deploy directly from your terminal.
+Import the repository on [vercel.com](https://vercel.com) and click **Deploy**.

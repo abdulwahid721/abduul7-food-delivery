@@ -10,19 +10,18 @@ export default function Footer() {
           {/* Brand Info */}
           <div className="space-y-3">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-full bg-[#a61919] border-2 border-white flex flex-col items-center justify-center text-white shrink-0">
+              <div className="w-9 h-9 rounded-full bg-[#871212] border-2 border-white flex flex-col items-center justify-center text-white shrink-0">
                 <Bike className="w-3.5 h-3.5 -mb-0.5" />
-                <span className="text-[6px] font-black uppercase tracking-tight">Deliver</span>
-                <span className="text-[7px] font-black uppercase">Addis</span>
+                <span className="text-[7px] font-black uppercase">Abduul</span>
               </div>
               <div>
-                <span className="text-base font-black text-white">Deliver Addis</span>
-                <p className="text-[10px] text-stone-400">Online Food &amp; Grocery Delivery</p>
+                <span className="text-base font-black text-white">Abduul Delivery</span>
+                <p className="text-[10px] text-stone-400">Addis Ababa Real Restaurants Platform</p>
               </div>
             </div>
 
             <p className="text-[11px] text-stone-400 leading-relaxed">
-              Bringing food from top restaurants across Addis Ababa straight to your doorstep or workplace with speed and care.
+              Connecting food lovers in Addis Ababa with the city’s top dining spots — Totot, Kategna, Yod Abyssinia, Effoi, Moyos, Castelli, and more.
             </p>
 
             <div className="pt-1 flex items-center gap-3">
@@ -35,15 +34,16 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Real Addis Restaurants */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-white text-xs uppercase tracking-wider">Quick Navigation</h4>
+            <h4 className="font-bold text-white text-xs uppercase tracking-wider">Featured Addis Restaurants</h4>
             <ul className="space-y-1.5 text-[11px]">
-              <li><a href="#featured-restaurants" className="hover:text-white transition">Featured Restaurants</a></li>
-              <li><a href="#menu-catalog" className="hover:text-white transition">Menu &amp; Dishes</a></li>
-              <li><a href="#menu-catalog" className="hover:text-white transition">Gurage Kitfo Specials</a></li>
-              <li><a href="#menu-catalog" className="hover:text-white transition">Fasting Beyaynetu</a></li>
-              <li><a href="#menu-catalog" className="hover:text-white transition">Drinks &amp; Spirits</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Totot Traditional (Gerji)</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Kategna Restaurant (Bole &amp; Sarbet)</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Yod Abyssinia (Bole)</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Effoi Artisanal Pizza (Atlas)</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Moyos Smashed Burger (Bole)</a></li>
+              <li><a href="#featured-restaurants" className="hover:text-white transition">Ristorante Castelli (Piazza)</a></li>
             </ul>
           </div>
 
@@ -51,7 +51,7 @@ export default function Footer() {
           <div className="space-y-2.5">
             <h4 className="font-bold text-white text-xs uppercase tracking-wider">Delivery Coverage</h4>
             <div className="flex flex-wrap gap-1.5 text-[10px]">
-              {['Bole Medhanialem', 'Bisrate Gebriel', 'Summit', 'Bole Atlas', 'Kazanchis', 'Sarbet', 'CMC', 'Gerji', 'Old Airport', 'Piazza', 'Mexico'].map((zone) => (
+              {['Bole Medhanialem', 'Gerji', 'Sarbet', 'Bole Atlas', 'Piazza', 'Kazanchis', 'Bisrate Gebriel', 'Summit', 'CMC Michael', 'Old Airport', 'Mexico', 'Megenagna'].map((zone) => (
                 <span key={zone} className="bg-stone-800 text-stone-300 px-2 py-1 rounded border border-stone-700/50">
                   {zone}
                 </span>
@@ -69,7 +69,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-[#a61919]" />
-                <span>support@deliveraddis.com</span>
+                <span>orders@abduul-delivery.et</span>
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-[#a61919] shrink-0 mt-0.5" />
@@ -82,7 +82,7 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-stone-500 text-[11px]">
-          <p>© {new Date().getFullYear()} Deliver Addis Clone. Built with React &amp; Tailwind CSS for Addis Ababa.</p>
+          <p>© {new Date().getFullYear()} Abduul Food Delivery. Crafted with love for Addis Ababa.</p>
           <p className="flex items-center gap-1">
             Made with <Heart className="w-3 h-3 text-red-500 fill-red-500" /> for Ethiopian cuisine lovers
           </p>
