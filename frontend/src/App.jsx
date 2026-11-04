@@ -56,7 +56,8 @@ export default function App() {
         const matchesAmharic = food.amharicName?.toLowerCase().includes(q);
         const matchesRest = food.restaurantName.toLowerCase().includes(q);
         const matchesDesc = food.description.toLowerCase().includes(q);
-        return matchesName || matchesAmharic || matchesRest || matchesDesc;
+        const matchesCat = food.category.toLowerCase().includes(q);
+        return matchesName || matchesAmharic || matchesRest || matchesDesc || matchesCat;
       }
       return true;
     });
@@ -78,13 +79,15 @@ export default function App() {
       <Navbar
         onScrollToRestaurants={scrollToRestaurants}
         onFilterDrinks={() => {
-          setActiveCategory('All');
-          setSearchQuery('Drink');
+          setSelectedRestaurantId(null);
+          setActiveCategory('Drinks & Market');
+          setSearchQuery('');
           scrollToMenu();
         }}
         onFilterMarket={() => {
-          setActiveCategory('All');
-          setSearchQuery('Market');
+          setSelectedRestaurantId(null);
+          setActiveCategory('Drinks & Market');
+          setSearchQuery('');
           scrollToMenu();
         }}
       />
@@ -94,16 +97,20 @@ export default function App() {
         onSeeRestaurants={scrollToRestaurants}
         onViewAll={() => {
           setSelectedRestaurantId(null);
+          setActiveCategory('All');
+          setSearchQuery('');
           scrollToRestaurants();
         }}
         onSelectMarket={() => {
-          setActiveCategory('All');
-          setSearchQuery('Market');
+          setSelectedRestaurantId(null);
+          setActiveCategory('Drinks & Market');
+          setSearchQuery('');
           scrollToMenu();
         }}
         onSelectDrinks={() => {
-          setActiveCategory('All');
-          setSearchQuery('Drink');
+          setSelectedRestaurantId(null);
+          setActiveCategory('Drinks & Market');
+          setSearchQuery('');
           scrollToMenu();
         }}
       />

@@ -45,10 +45,19 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
 
           {/* 5-Star Golden Rating Row */}
           <div className="flex items-center gap-1 text-amber-400">
-            {[...Array(restaurant.rating)].map((_, i) => (
-              <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Star
+                key={i}
+                className={`w-3.5 h-3.5 ${
+                  i < Math.round(restaurant.rating || 5)
+                    ? 'fill-amber-400 text-amber-400'
+                    : 'text-stone-300'
+                }`}
+              />
             ))}
-            <span className="text-[11px] font-bold text-stone-700 ml-1">{restaurant.rating.toFixed(1)}</span>
+            <span className="text-[11px] font-bold text-stone-700 ml-1">
+              {(restaurant.rating || 5).toFixed(1)}
+            </span>
           </div>
 
           {/* Description */}
