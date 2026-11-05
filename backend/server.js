@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import { initDb, db } from './db/index.js';
@@ -10,11 +12,52 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
-app.use(express.json());
+// Security Middleware: Helmet (Secure HTTP Headers)
+app.use(
+  helmet({
+    crossOriginResourcePolicy: false,
+    contentSecurityPolicy: false, // Allows frontend assets to load without conflict
+  })
+);
+
+// CORS configuration
+app.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+// Payload size limit to prevent memory exhaustion attacks
+app.use(express.json({ limit: '1mb' }));
 
 // Initialize Database (PostgreSQL if DATABASE_URL configured, or local persistent store)
 await initDb();
+
+// Strict Rate Limiting for Authentication (Brute Force Protection)
+const authRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes window
+  max: 10, // Max 10 attempts per IP per 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many login attempts from this device. For your security, please wait 15 minutes before trying again.',
+  },
+});
+
+// General API Rate Limiter
+const apiRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', apiRateLimiter);
+
+// Constant-time comparison dummy hash to prevent timing attacks / email enumeration
+const DUMMY_BCRYPT_HASH = '$2a$10$wE4jW31j9k0gU10H81yYueK31k9k0gU10H81yYueK31k9k0gU10H8';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // ==========================================
 // 1. HEALTH & ROOT
@@ -23,7 +66,8 @@ app.get('/', (req, res) => {
   res.json({
     name: 'Abduul Food Delivery API',
     status: 'online',
-    version: '1.0.0',
+    security: 'enhanced (Rate-limiting, Helmet headers, Timing-attack resistant)',
+    version: '1.1.0',
     endpoints: [
       '/api/auth/register',
       '/api/auth/login',
@@ -35,27 +79,48 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// 2. AUTHENTICATION & CUSTOMER ACCOUNTS (Step 2)
+// 2. SECURE AUTHENTICATION (Step 2)
 // ==========================================
-app.post('/api/auth/register', async (req, res) => {
+app.post('/api/auth/register', authRateLimiter, async (req, res) => {
   try {
-    const { name, email, password, phone, address } = req.body;
+    let { name, email, password, phone, address } = req.body;
 
+    // 1. Validate required fields
     if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Name, email, and password are required' });
+      return res.status(400).json({ error: 'Full name, email, and password are required' });
     }
 
+    name = String(name).trim();
+    email = String(email).trim().toLowerCase();
+
+    // 2. Validate email format
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ error: 'Please provide a valid email address' });
+    }
+
+    // 3. Enforce strong password complexity
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+    const hasLetter = /[a-zA-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    if (!hasLetter || !hasNumber) {
+      return res.status(400).json({ error: 'Password must contain both letters and numbers' });
+    }
+
+    // 4. Check if user already exists
     const existing = await db.findUserByEmail(email);
     if (existing) {
-      return res.status(400).json({ error: 'An account with this email already exists' });
+      return res.status(400).json({ error: 'An account with this email address already exists' });
     }
 
+    // 5. Create secure user
     const user = await db.createUser({
       name,
       email,
       password,
-      phone: phone || '',
-      address: address || '',
+      phone: phone ? String(phone).trim() : '',
+      address: address ? String(address).trim() : '',
       role: 'customer',
     });
 
@@ -63,26 +128,28 @@ app.post('/api/auth/register', async (req, res) => {
     res.status(201).json({ user, token });
   } catch (err) {
     console.error('Registration error:', err);
-    res.status(500).json({ error: 'Server error during registration' });
+    res.status(500).json({ error: 'Server error during secure registration' });
   }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', authRateLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
+    email = String(email).trim().toLowerCase();
     const user = await db.findUserByEmail(email);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid email or password' });
-    }
 
-    const match = await bcrypt.compare(password, user.password_hash);
-    if (!match) {
-      return res.status(401).json({ error: 'Invalid email or password' });
+    // Timing-attack prevention: always run bcrypt.compare to guarantee identical response time
+    const hashToVerify = user ? user.password_hash : DUMMY_BCRYPT_HASH;
+    const isPasswordValid = await bcrypt.compare(password, hashToVerify);
+
+    if (!user || !isPasswordValid) {
+      // Generic message to avoid email enumeration
+      return res.status(401).json({ error: 'Invalid email address or password' });
     }
 
     const { password_hash, ...safeUser } = user;
@@ -90,7 +157,7 @@ app.post('/api/auth/login', async (req, res) => {
     res.json({ user: safeUser, token });
   } catch (err) {
     console.error('Login error:', err);
-    res.status(500).json({ error: 'Server error during login' });
+    res.status(500).json({ error: 'Server error during authentication' });
   }
 });
 
@@ -126,7 +193,6 @@ app.get('/api/restaurants/:id', async (req, res) => {
 // ==========================================
 // 4. FOOD CRUD MANAGEMENT (Step 3)
 // ==========================================
-// View all foods or filter by restaurant
 app.get('/api/foods', async (req, res) => {
   try {
     const restaurantId = req.query.restaurant_id || null;
@@ -138,11 +204,9 @@ app.get('/api/foods', async (req, res) => {
   }
 });
 
-// Admin add new food item
 app.post('/api/foods', authenticate, requireAdmin, async (req, res) => {
   try {
-    const { restaurant_id, name, amharic_name, description, price, category, image, prep_time, is_popular } = req.body;
-
+    const { restaurant_id, name, price, category } = req.body;
     if (!restaurant_id || !name || !price || !category) {
       return res.status(400).json({ error: 'Restaurant ID, name, price, and category are required' });
     }
@@ -155,7 +219,6 @@ app.post('/api/foods', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin update food item
 app.put('/api/foods/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const updated = await db.updateFood(req.params.id, req.body);
@@ -167,7 +230,6 @@ app.put('/api/foods/:id', authenticate, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin delete food item
 app.delete('/api/foods/:id', authenticate, requireAdmin, async (req, res) => {
   try {
     const deleted = await db.deleteFood(req.params.id);
@@ -182,7 +244,6 @@ app.delete('/api/foods/:id', authenticate, requireAdmin, async (req, res) => {
 // ==========================================
 // 5. SHOPPING CART & ORDERS (Step 4 & Step 5)
 // ==========================================
-// Place new order
 app.post('/api/orders', async (req, res) => {
   try {
     const { customerName, phone, subcity, address, paymentMethod, items, subtotal, deliveryFee, tax, total, userId } = req.body;
@@ -193,10 +254,10 @@ app.post('/api/orders', async (req, res) => {
 
     const order = await db.createOrder({
       userId: userId || null,
-      customerName,
-      phone,
-      subcity,
-      address,
+      customerName: String(customerName).trim(),
+      phone: String(phone).trim(),
+      subcity: String(subcity || 'Bole Medhanialem').trim(),
+      address: String(address).trim(),
       paymentMethod: paymentMethod || 'telebirr',
       items,
       subtotal: subtotal || 0,
@@ -212,7 +273,6 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// Admin view all orders
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await db.getOrders();
@@ -223,7 +283,6 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// Admin update order status
 app.patch('/api/orders/:id/status', async (req, res) => {
   try {
     const { status } = req.body;
