@@ -40,8 +40,6 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  if (!isOpen) return null;
-
   // Calculate password strength score (0 to 4)
   const passwordStrength = useMemo(() => {
     if (!password) return { score: 0, label: 'None', color: 'bg-stone-200' };
@@ -69,6 +67,8 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
     if (isLogin || !confirmPassword) return true;
     return password === confirmPassword;
   }, [isLogin, password, confirmPassword]);
+
+  if (!isOpen) return null;
 
   const handleLogin = async (e) => {
     e.preventDefault();
