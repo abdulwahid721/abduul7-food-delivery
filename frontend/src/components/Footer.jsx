@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bike, Phone, Mail, MapPin, Heart, ShieldCheck, Lock } from 'lucide-react';
 
-export default function Footer({ onOpenAdmin, onOpenPrivacy }) {
+export default function Footer({ onOpenAdmin, onOpenPrivacy, currentUser }) {
   return (
     <footer className="bg-stone-900 text-stone-300 pt-12 pb-8 border-t border-stone-800 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -76,23 +76,25 @@ export default function Footer({ onOpenAdmin, onOpenPrivacy }) {
                 <span>Bole Road, Mega Building, Addis Ababa</span>
               </div>
 
-              {/* Quick links for Admin and Privacy Policy (PP) */}
+              {/* Privacy Policy */}
               <div className="pt-2 flex flex-col gap-1.5 border-t border-stone-800">
                 <button
                   onClick={onOpenPrivacy}
                   className="flex items-center gap-1.5 text-stone-400 hover:text-white transition text-[11px] text-left"
                 >
                   <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Privacy Policy &amp; Data Security (PP)</span>
+                  <span>Privacy Policy &amp; Data Security</span>
                 </button>
 
-                <button
-                  onClick={onOpenAdmin}
-                  className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition text-[11px] text-left font-bold"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                  <span>Store Admin Portal (Dispatch &amp; Orders)</span>
-                </button>
+                {currentUser?.role === 'admin' && (
+                  <button
+                    onClick={onOpenAdmin}
+                    className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition text-[11px] text-left font-bold"
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Store Admin Portal (Dispatch &amp; Orders)</span>
+                  </button>
+                )}
               </div>
             </div>
           </div>

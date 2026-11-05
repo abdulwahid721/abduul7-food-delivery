@@ -17,7 +17,6 @@ import {
 
 export default function OrderTrackerModal() {
   const { activeOrder, isTrackerOpen, setIsTrackerOpen, setActiveOrder } = useCart();
-  const [isSimulating, setIsSimulating] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Poll for live status from backend/Supabase every 3 seconds
@@ -61,23 +60,6 @@ export default function OrderTrackerModal() {
     } catch (e) {
     } finally {
       setTimeout(() => setIsRefreshing(false), 500);
-    }
-  };
-
-  const advanceNextStep = async () => {
-    const nextIdx = currentIdx + 1;
-    if (nextIdx < steps.length) {
-      const nextStatus = steps[nextIdx].key;
-      setIsSimulating(true);
-      try {
-        const orderNum = activeOrder.orderNumber || activeOrder.order_number || activeOrder.id;
-        await api.updateOrderStatus(orderNum, nextStatus);
-        setActiveOrder((prev) => ({ ...prev, status: nextStatus }));
-      } catch (e) {
-        setActiveOrder((prev) => ({ ...prev, status: nextStatus }));
-      } finally {
-        setIsSimulating(false);
-      }
     }
   };
 
@@ -204,20 +186,8 @@ export default function OrderTrackerModal() {
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-bold text-stone-800 text-xs flex items-center gap-1.5">
                 <span>Real-Time Stage</span>
-                <span className="text-[10px] text-stone-400 font-normal">(Updates automatically)</span>
+                <span className="text-[10px] text-stone-400 font-normal">(Synced live with kitchen dispatch)</span>
               </h4>
-
-              {/* Demo test button to simulate advancement */}
-              {currentIdx < steps.length - 1 && (
-                <button
-                  onClick={advanceNextStep}
-                  disabled={isSimulating}
-                  className="bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 px-2 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-1"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-700" />
-                  <span>Advance Next Step</span>
-                </button>
-              )}
             </div>
 
             <div className="relative pl-6 space-y-4 before:absolute before:left-2.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-stone-200">

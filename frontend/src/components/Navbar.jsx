@@ -130,19 +130,17 @@ export default function Navbar({
               </button>
             )}
 
-            {/* Admin Portal Button - ALWAYS ACCESSIBLE */}
-            <button
-              onClick={onOpenAdmin}
-              className={`flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs transition ${
-                currentUser?.role === 'admin'
-                  ? 'bg-amber-400 text-stone-900 hover:bg-amber-300'
-                  : 'bg-white/20 hover:bg-white/30 text-white border border-white/25'
-              }`}
-              title="Store Admin Management & Orders"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline">Admin Portal</span>
-            </button>
+            {/* Admin Portal Button - ONLY VISIBLE TO LOGGED IN ADMINS */}
+            {currentUser?.role === 'admin' && (
+              <button
+                onClick={onOpenAdmin}
+                className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold bg-amber-400 hover:bg-amber-300 text-stone-900 px-2.5 sm:px-3 py-1 rounded-full shadow-xs transition"
+                title="Store Admin Management & Orders"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-stone-900" />
+                <span>Admin Portal</span>
+              </button>
+            )}
 
             {/* Login / Orders / User Profile (PP) */}
             <button

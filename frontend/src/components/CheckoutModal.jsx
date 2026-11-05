@@ -7,10 +7,10 @@ import { ADDIS_NEIGHBORHOODS } from '../data/locations';
 export default function CheckoutModal({ currentUser, currentNeighborhood }) {
   const { isCheckoutOpen, setIsCheckoutOpen, total, subtotal, deliveryFee, tax, placeOrder } = useCart();
 
-  const [customerName, setCustomerName] = useState(currentUser?.name || 'Alex / ዮናስ');
-  const [phone, setPhone] = useState(currentUser?.phone || '0911 23 45 67');
+  const [customerName, setCustomerName] = useState(currentUser?.name || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
   const [subcity, setSubcity] = useState(currentNeighborhood?.name || 'Bole Medhanialem');
-  const [address, setAddress] = useState(currentUser?.address || 'Cameroon St, House #342');
+  const [address, setAddress] = useState(currentUser?.address || '');
   const [paymentMethod, setPaymentMethod] = useState('telebirr');
   const [isSubmitting, setIsSubmitting] = useState(false);
 

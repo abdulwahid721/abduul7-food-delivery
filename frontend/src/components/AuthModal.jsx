@@ -76,24 +76,18 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
 
     setError(null);
     setLoading(true);
-    setLoadingMsg('Connecting to secure Supabase backend...');
-
-    const timer = setTimeout(() => {
-      setLoadingMsg('Verifying credentials (free-tier server waking up)...');
-    }, 2500);
+    setLoadingMsg('Verifying credentials with database...');
 
     try {
       const res = await api.login(email.trim().toLowerCase(), password);
-      clearTimeout(timer);
       setFailedAttempts(0);
       onUserChange(res.user);
       onClose();
     } catch (err) {
-      clearTimeout(timer);
       const newAttempts = failedAttempts + 1;
       setFailedAttempts(newAttempts);
 
-      if (newAttempts >= 4) {
+      if (newAttempts >= 5) {
         setLockoutTimer(30);
         const interval = setInterval(() => {
           setLockoutTimer((prev) => {
@@ -117,7 +111,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
     setError(null);
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long for your security.');
+      setError('Password must be at least 8 characters long.');
       return;
     }
 
@@ -132,7 +126,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
     }
 
     setLoading(true);
-    setLoadingMsg('Creating encrypted user profile...');
+    setLoadingMsg('Creating secure account in database...');
     try {
       const res = await api.register({
         name: name.trim(),
@@ -151,50 +145,13 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
     }
   };
 
-  const fillDemoCustomer = async () => {
-    setIsLogin(true);
-    setEmail('customer@abduul.et');
-    setPassword('Customer@123');
-    setError(null);
-    setLoading(true);
-    setLoadingMsg('Signing into Demo Customer account...');
-    try {
-      const res = await api.login('customer@abduul.et', 'Customer@123');
-      onUserChange(res.user);
-      onClose();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fillDemoAdmin = async () => {
-    setIsLogin(true);
-    setEmail('admin@abduul.et');
-    setPassword('Admin@123');
-    setError(null);
-    setLoading(true);
-    setLoadingMsg('Signing into Store Admin account...');
-    try {
-      const res = await api.login('admin@abduul.et', 'Admin@123');
-      onUserChange(res.user);
-      onClose();
-      if (onOpenAdmin) onOpenAdmin();
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/65 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
       <div
         className="relative bg-white rounded-2xl max-w-md w-full shadow-2xl overflow-hidden border border-stone-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Security Verified Banner */}
+        {/* Security Banner */}
         <div className="bg-stone-900 px-4 py-2 text-white text-[11px] flex items-center justify-between border-b border-stone-800">
           <div className="flex items-center gap-1.5 text-stone-300">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
@@ -209,14 +166,14 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
         <div className="p-4 bg-[#a61919] text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-xl">
-              {user?.avatar || '🛵'}
+              {user?.avatar || '👤'}
             </div>
             <div>
               <h3 className="font-bold text-sm sm:text-base">
-                {user ? user.name : isLogin ? 'Secure Sign In' : 'Create Protected Account'}
+                {user ? user.name : isLogin ? 'Sign In' : 'Create Account'}
               </h3>
               <p className="text-[11px] text-red-100">
-                {user ? user.email : 'Protected with industry-grade Bcrypt hashing'}
+                {user ? (user.role === 'admin' ? 'Store Administrator' : 'Customer Account') : 'Abduul Food Delivery'}
               </p>
             </div>
           </div>
@@ -232,13 +189,13 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
         {/* Content */}
         <div className="p-4 sm:p-6 space-y-4">
           {user ? (
-            /* Logged In View */
+            /* Logged In View - Real User Account */
             <div className="space-y-4">
               <div className="bg-stone-50 rounded-xl p-4 border border-stone-200 space-y-2.5 text-xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl p-1 bg-white rounded-lg shadow-2xs border border-stone-200">
-                      {user.avatar || '☕'}
+                      {user.avatar || '👤'}
                     </span>
                     <div>
                       <span className="font-bold text-stone-900 text-sm block">{user.name}</span>
@@ -257,11 +214,11 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                 {user.phone && <p className="text-stone-600 font-mono text-[11px]">📱 {user.phone}</p>}
                 {user.address && <p className="text-stone-600 text-[11px]">📍 {user.address}</p>}
 
-                {/* Change Avatar / Profile Picture */}
+                {/* Profile Avatar Selection */}
                 <div className="pt-2 border-t border-stone-200">
                   <p className="text-[10px] font-bold text-stone-500 mb-1 flex items-center gap-1">
                     <Smile className="w-3 h-3 text-stone-400" />
-                    <span>Choose Profile Avatar (PP):</span>
+                    <span>Profile Avatar:</span>
                   </p>
                   <div className="flex gap-1.5 flex-wrap">
                     {AVATAR_OPTIONS.map((av) => (
@@ -285,12 +242,12 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
 
                 <div className="pt-2 border-t border-stone-200 flex items-center gap-1.5 text-[10px] text-emerald-700">
                   <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                  <span>Session authenticated via Supabase PostgreSQL</span>
+                  <span>Authenticated via Supabase PostgreSQL</span>
                 </div>
               </div>
 
-              {/* Admin Portal Button */}
-              {user.role === 'admin' ? (
+              {/* Admin Portal Button - ONLY VISIBLE IF USER HAS ADMIN ROLE IN DATABASE */}
+              {user.role === 'admin' && (
                 <button
                   onClick={() => {
                     onClose();
@@ -300,14 +257,6 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                 >
                   <ShieldCheck className="w-4 h-4 text-amber-400" />
                   <span>Open Store Admin Portal</span>
-                </button>
-              ) : (
-                <button
-                  onClick={fillDemoAdmin}
-                  className="w-full bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Switch to Store Admin View</span>
                 </button>
               )}
 
@@ -323,31 +272,8 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
               </button>
             </div>
           ) : (
-            /* Login / Register Form */
+            /* Real Login / Register Form */
             <>
-              {/* Quick Demo Credentials */}
-              <div className="bg-stone-50 p-2.5 rounded-xl border border-stone-200 text-xs">
-                <p className="text-[11px] font-bold text-stone-600 mb-1.5">⚡ Instant 1-Click Access:</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={fillDemoCustomer}
-                    disabled={loading}
-                    className="flex-1 bg-white hover:bg-stone-100 border border-stone-300 py-1.5 px-2 rounded-lg text-[11px] font-semibold text-stone-700 transition flex items-center justify-center gap-1"
-                  >
-                    <span>☕ Demo Customer</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={fillDemoAdmin}
-                    disabled={loading}
-                    className="flex-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 py-1.5 px-2 rounded-lg text-[11px] font-bold text-amber-900 transition flex items-center justify-center gap-1"
-                  >
-                    <span>🛡️ Store Admin</span>
-                  </button>
-                </div>
-              </div>
-
               {/* Error Alert */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 p-2.5 rounded-xl text-xs font-semibold flex items-start gap-2">
@@ -360,7 +286,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
               {lockoutTimer > 0 && (
                 <div className="bg-amber-50 border border-amber-300 text-amber-800 p-2.5 rounded-xl text-xs font-semibold flex items-center gap-2">
                   <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Too many failed attempts. Cooldown active: {lockoutTimer}s</span>
+                  <span>Too many failed attempts. Cooldown: {lockoutTimer}s</span>
                 </div>
               )}
 
@@ -375,7 +301,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Alex / ዮናስ"
+                        placeholder="Your full name"
                         className="w-full text-xs border border-stone-200 rounded-lg pl-9 pr-3 py-2 text-stone-900 focus:outline-none focus:border-[#a61919]"
                       />
                     </div>
@@ -391,7 +317,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="you@example.com"
+                      placeholder="name@example.com"
                       autoComplete="email"
                       className="w-full text-xs border border-stone-200 rounded-lg pl-9 pr-3 py-2 text-stone-900 focus:outline-none focus:border-[#a61919]"
                     />
@@ -479,7 +405,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                   <>
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Phone (Telebirr)</label>
+                        <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Phone Number</label>
                         <input
                           type="tel"
                           value={phone}
@@ -494,16 +420,16 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                           type="text"
                           value={address}
                           onChange={(e) => setAddress(e.target.value)}
-                          placeholder="Bole Medhanialem"
+                          placeholder="Bole, Gerji, etc."
                           className="w-full text-xs border border-stone-200 rounded-lg px-2.5 py-2 text-stone-900 focus:outline-none focus:border-[#a61919]"
                         />
                       </div>
                     </div>
 
-                    {/* Choose Avatar (PP) */}
+                    {/* Profile Avatar Selection */}
                     <div>
                       <label className="block text-[11px] font-semibold text-stone-700 mb-1">
-                        Select Profile Avatar (PP)
+                        Select Avatar
                       </label>
                       <div className="flex gap-2">
                         {AVATAR_OPTIONS.map((av) => (
@@ -535,12 +461,12 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                     : lockoutTimer > 0
                     ? `Please wait ${lockoutTimer}s`
                     : isLogin
-                    ? 'Sign In Securely'
-                    : 'Create Protected Account'}
+                    ? 'Sign In'
+                    : 'Create Account'}
                 </button>
               </form>
 
-              {/* Privacy Policy & Terms Link */}
+              {/* Privacy Policy & Switch Mode */}
               <div className="pt-2 flex items-center justify-between text-[11px] text-stone-500 border-t border-stone-100">
                 <button
                   type="button"
@@ -564,7 +490,7 @@ export default function AuthModal({ isOpen, onClose, user, onUserChange, onOpenA
                     className="flex items-center gap-1 text-stone-500 hover:text-stone-800 hover:underline"
                   >
                     <FileText className="w-3 h-3 text-stone-400" />
-                    <span>Privacy Policy (PP)</span>
+                    <span>Privacy Policy</span>
                   </button>
                 )}
               </div>

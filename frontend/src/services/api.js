@@ -46,101 +46,66 @@ export const api = {
     return FOODS;
   },
 
-  // 3. User Authentication
+  // 3. User Authentication (Real Backend / Supabase Authentication)
   async login(email, password) {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.token) {
-          localStorage.setItem('abduul_token', data.token);
-          localStorage.setItem('abduul_user', JSON.stringify(data.user));
-        }
-        return data;
-      }
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email.trim().toLowerCase(), password }),
+    });
+    if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || 'Invalid email or password');
-    } catch (fetchErr) {
-      // If network fails (e.g. Render server cold-starting), support verified demo fallback
-      if (email.toLowerCase() === 'admin@abduul.et' && password === 'Admin@123') {
-        const adminUser = {
-          id: 'usr-admin-demo',
-          name: 'Abduul Store Admin',
-          email: 'admin@abduul.et',
-          role: 'admin',
-          phone: '+251 91 123 4567',
-          address: 'Bole Medhanialem, Mega Bldg, Addis Ababa',
-          avatar: '🦁',
-        };
-        localStorage.setItem('abduul_user', JSON.stringify(adminUser));
-        return { user: adminUser, token: 'demo-admin-jwt' };
-      }
-      if (email.toLowerCase() === 'customer@abduul.et' && password === 'Customer@123') {
-        const custUser = {
-          id: 'usr-cust-demo',
-          name: 'Yonas Alex',
-          email: 'customer@abduul.et',
-          role: 'customer',
-          phone: '+251 92 987 6543',
-          address: 'Bole Medhanialem, House 342, Addis Ababa',
-          avatar: '☕',
-        };
-        localStorage.setItem('abduul_user', JSON.stringify(custUser));
-        return { user: custUser, token: 'demo-cust-jwt' };
-      }
-      throw fetchErr;
+      throw new Error(err.error || 'Invalid email address or password');
     }
+    const data = await res.json();
+    if (data.token) {
+      localStorage.setItem('abduul_token', data.token);
+      localStorage.setItem('abduul_user', JSON.stringify(data.user));
+    }
+    return data;
   },
 
   async register({ name, email, password, phone, address, avatar }) {
-    try {
-      const res = await fetch(`${API_BASE}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, phone, address }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (avatar) data.user.avatar = avatar;
-        if (data.token) {
-          localStorage.setItem('abduul_token', data.token);
-          localStorage.setItem('abduul_user', JSON.stringify(data.user));
-        }
-        return data;
-      }
+    const res = await fetch(`${API_BASE}/api/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phone: phone ? phone.trim() : '',
+        address: address ? address.trim() : '',
+      }),
+    });
+    if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       throw new Error(err.error || 'Registration failed');
-    } catch (fetchErr) {
-      // Offline fallback registration
-      const newUser = {
-        id: `usr-${Date.now()}`,
-        name,
-        email,
-        role: 'customer',
-        phone,
-        address,
-        avatar: avatar || '☕',
-      };
-      localStorage.setItem('abduul_user', JSON.stringify(newUser));
-      return { user: newUser, token: 'local-jwt' };
     }
+    const data = await res.json();
+    if (avatar && data.user) data.user.avatar = avatar;
+    if (data.token) {
+      localStorage.setItem('abduul_token', data.token);
+      localStorage.setItem('abduul_user', JSON.stringify(data.user));
+    }
+    return data;
   },
 
   async getCurrentUser() {
     try {
       const token = localStorage.getItem('abduul_token');
-      if (token && token !== 'demo-admin-jwt' && token !== 'demo-cust-jwt' && token !== 'local-jwt') {
-        const res = await fetch(`${API_BASE}/api/auth/me`, {
-          headers: getAuthHeader(),
-        });
-        if (res.ok) {
-          const data = await res.json();
-          return data.user;
-        }
+      if (!token) return null;
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
+        headers: getAuthHeader(),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.user;
+      }
+      // If token expired or invalid, clear session
+      if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('abduul_token');
+        localStorage.removeItem('abduul_user');
+        return null;
       }
     } catch (e) {}
     const saved = localStorage.getItem('abduul_user');

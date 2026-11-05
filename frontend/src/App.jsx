@@ -401,14 +401,16 @@ export default function App() {
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
 
-      {/* Admin Order & Menu Control Panel Modal */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        foods={foodsList}
-      />
+      {/* Admin Order & Menu Control Panel Modal - ONLY FOR ADMIN */}
+      {currentUser?.role === 'admin' && (
+        <AdminModal
+          isOpen={isAdminOpen}
+          onClose={() => setIsAdminOpen(false)}
+          foods={foodsList}
+        />
+      )}
 
-      {/* Privacy Policy & Data Security Modal (PP) */}
+      {/* Privacy Policy & Data Security Modal */}
       <PrivacyPolicyModal
         isOpen={isPrivacyOpen}
         onClose={() => setIsPrivacyOpen(false)}
@@ -416,7 +418,14 @@ export default function App() {
 
       {/* Deliver Addis Footer */}
       <Footer
-        onOpenAdmin={() => setIsAdminOpen(true)}
+        currentUser={currentUser}
+        onOpenAdmin={() => {
+          if (currentUser?.role === 'admin') {
+            setIsAdminOpen(true);
+          } else {
+            setIsAuthOpen(true);
+          }
+        }}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
     </div>
