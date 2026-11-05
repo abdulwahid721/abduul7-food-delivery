@@ -120,7 +120,7 @@ export default function AdminModal({ isOpen, onClose }) {
                       {getStatusBadge(o.status)}
                     </div>
                     <span className="font-mono font-bold text-[#a61919] text-sm">
-                      {(o.total || 0).toLocaleString()} ብር
+                      {(Number(o.total) || 0).toLocaleString()} ብር
                     </span>
                   </div>
 

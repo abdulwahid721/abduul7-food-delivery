@@ -170,8 +170,16 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
 // ==========================================
 app.get('/api/restaurants', async (req, res) => {
   try {
-    const restaurants = await db.getRestaurants();
-    res.json(restaurants);
+    const raw = await db.getRestaurants();
+    const formatted = raw.map((r) => ({
+      ...r,
+      rating: parseFloat(r.rating) || 5.0,
+      deliveryFee: parseInt(r.delivery_fee ?? r.deliveryFee, 10) || 150,
+      deliveryTime: r.delivery_time || r.deliveryTime || '25-35 min',
+      promoBadge: r.promo_badge || r.promoBadge || '',
+      isFeatured: Boolean(r.is_featured ?? r.isFeatured),
+    }));
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch restaurants' });
@@ -183,7 +191,24 @@ app.get('/api/restaurants/:id', async (req, res) => {
     const restaurant = await db.getRestaurantById(req.params.id);
     if (!restaurant) return res.status(404).json({ error: 'Restaurant not found' });
     const foods = await db.getFoods(req.params.id);
-    res.json({ ...restaurant, menu: foods });
+    const formattedFoods = foods.map((f) => ({
+      ...f,
+      price: parseInt(f.price, 10) || 0,
+      rating: parseFloat(f.rating) || 5.0,
+      prepTime: f.prep_time || f.prepTime || '20 min',
+      restaurantId: f.restaurant_id || f.restaurantId,
+      restaurantName: f.restaurant_name || f.restaurantName,
+      amharicName: f.amharic_name || f.amharicName,
+      isPopular: Boolean(f.is_popular ?? f.isPopular),
+    }));
+    res.json({
+      ...restaurant,
+      rating: parseFloat(restaurant.rating) || 5.0,
+      deliveryFee: parseInt(restaurant.delivery_fee ?? restaurant.deliveryFee, 10) || 150,
+      deliveryTime: restaurant.delivery_time || restaurant.deliveryTime || '25-35 min',
+      promoBadge: restaurant.promo_badge || restaurant.promoBadge || '',
+      menu: formattedFoods,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch restaurant' });
@@ -196,8 +221,18 @@ app.get('/api/restaurants/:id', async (req, res) => {
 app.get('/api/foods', async (req, res) => {
   try {
     const restaurantId = req.query.restaurant_id || null;
-    const foods = await db.getFoods(restaurantId);
-    res.json(foods);
+    const raw = await db.getFoods(restaurantId);
+    const formatted = raw.map((f) => ({
+      ...f,
+      price: parseInt(f.price, 10) || 0,
+      rating: parseFloat(f.rating) || 5.0,
+      prepTime: f.prep_time || f.prepTime || '20 min',
+      restaurantId: f.restaurant_id || f.restaurantId,
+      restaurantName: f.restaurant_name || f.restaurantName,
+      amharicName: f.amharic_name || f.amharicName,
+      isPopular: Boolean(f.is_popular ?? f.isPopular),
+    }));
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch foods' });

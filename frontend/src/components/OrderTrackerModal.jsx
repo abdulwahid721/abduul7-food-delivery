@@ -149,9 +149,9 @@ export default function OrderTrackerModal() {
             </div>
 
             <div className="pt-2 border-t border-stone-100 flex justify-between font-black text-stone-900">
-              <span>Total Paid ({activeOrder.paymentMethod.toUpperCase()})</span>
+              <span>Total Paid ({String(activeOrder.paymentMethod || 'cash').toUpperCase()})</span>
               <span className="font-mono text-[#a61919] text-sm">
-                {activeOrder.total?.toLocaleString()} ብር
+                {Number(activeOrder.total || 0).toLocaleString()} ብር
               </span>
             </div>
           </div>

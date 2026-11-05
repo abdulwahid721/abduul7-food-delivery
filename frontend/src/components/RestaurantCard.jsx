@@ -2,6 +2,11 @@ import React from 'react';
 import { Star, Tag, Clock, Bike } from 'lucide-react';
 
 export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
+  const ratingNum = Number(restaurant.rating) || 5.0;
+  const deliveryFee = restaurant.deliveryFee ?? restaurant.delivery_fee ?? 150;
+  const promo = restaurant.promoBadge || restaurant.promo_badge;
+  const deliveryTime = restaurant.deliveryTime || restaurant.delivery_time || '25-35 min';
+
   return (
     <div
       onClick={onSelect}
@@ -22,7 +27,7 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
           />
           <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-full text-[11px] font-bold text-stone-800 shadow-xs flex items-center gap-1">
             <Clock className="w-3 h-3 text-amber-500" />
-            <span>{restaurant.deliveryTime}</span>
+            <span>{deliveryTime}</span>
           </div>
         </div>
 
@@ -36,10 +41,10 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
           </div>
 
           {/* Promo Badge matching screenshot */}
-          {restaurant.promoBadge && (
+          {promo && (
             <div className="bg-red-50/80 border border-red-200 text-red-700 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5">
               <Tag className="w-3 h-3 text-red-600 shrink-0" />
-              <span className="truncate">{restaurant.promoBadge}</span>
+              <span className="truncate">{promo}</span>
             </div>
           )}
 
@@ -49,14 +54,14 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
               <Star
                 key={i}
                 className={`w-3.5 h-3.5 ${
-                  i < Math.round(restaurant.rating || 5)
+                  i < Math.round(ratingNum)
                     ? 'fill-amber-400 text-amber-400'
                     : 'text-stone-300'
                 }`}
               />
             ))}
             <span className="text-[11px] font-bold text-stone-700 ml-1">
-              {(restaurant.rating || 5).toFixed(1)}
+              {ratingNum.toFixed(1)}
             </span>
           </div>
 
@@ -70,7 +75,7 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
       {/* Card Footer */}
       <div className="px-3.5 pb-3.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
         <span className="text-stone-400 flex items-center gap-1 font-medium">
-          <Bike className="w-3 h-3 text-[#a61919]" /> {restaurant.deliveryFee} ብር
+          <Bike className="w-3 h-3 text-[#a61919]" /> {deliveryFee} ብር
         </span>
         <span className={`font-bold transition-colors ${
           isSelected ? 'text-[#a61919]' : 'text-stone-700 group-hover:text-[#a61919]'
