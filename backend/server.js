@@ -279,6 +279,33 @@ app.delete('/api/foods/:id', authenticate, requireAdmin, async (req, res) => {
 // ==========================================
 // 5. SHOPPING CART & ORDERS (Step 4 & Step 5)
 // ==========================================
+function formatOrder(o) {
+  if (!o) return null;
+  const items = Array.isArray(o.items) ? o.items : typeof o.items === 'string' ? JSON.parse(o.items || '[]') : [];
+  return {
+    ...o,
+    id: o.id,
+    orderNumber: o.order_number || o.orderNumber || o.id,
+    order_number: o.order_number || o.orderNumber || o.id,
+    userId: o.user_id || o.userId || null,
+    customerName: o.customer_name || o.customerName || 'Anonymous',
+    phone: o.phone || '',
+    subcity: o.subcity || 'Bole Medhanialem',
+    address: o.address || '',
+    paymentMethod: o.payment_method || o.paymentMethod || 'telebirr',
+    status: o.status || 'placed',
+    subtotal: parseInt(o.subtotal, 10) || 0,
+    deliveryFee: parseInt(o.delivery_fee ?? o.deliveryFee, 10) || 150,
+    tax: parseInt(o.tax, 10) || 0,
+    total: parseInt(o.total, 10) || 0,
+    driverName: o.driver_name || o.driverName || 'ዳዊት ታደሰ (Dawit Tadesse)',
+    driverPhone: o.driver_phone || o.driverPhone || '+251 91 123 4567',
+    createdAt: o.created_at || o.createdAt || new Date().toISOString(),
+    created_at: o.created_at || o.createdAt || new Date().toISOString(),
+    items,
+  };
+}
+
 app.post('/api/orders', async (req, res) => {
   try {
     const { customerName, phone, subcity, address, paymentMethod, items, subtotal, deliveryFee, tax, total, userId } = req.body;
@@ -301,7 +328,7 @@ app.post('/api/orders', async (req, res) => {
       total: total || 0,
     });
 
-    res.status(201).json(order);
+    res.status(201).json(formatOrder(order));
   } catch (err) {
     console.error('Order creation error:', err);
     res.status(500).json({ error: 'Failed to place order' });
@@ -310,8 +337,9 @@ app.post('/api/orders', async (req, res) => {
 
 app.get('/api/orders', async (req, res) => {
   try {
-    const orders = await db.getOrders();
-    res.json(orders);
+    const rawOrders = await db.getOrders();
+    const formatted = rawOrders.map(formatOrder);
+    res.json(formatted);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to fetch orders' });
@@ -328,7 +356,7 @@ app.patch('/api/orders/:id/status', async (req, res) => {
 
     const updated = await db.updateOrderStatus(req.params.id, status);
     if (!updated) return res.status(404).json({ error: 'Order not found' });
-    res.json(updated);
+    res.json(formatOrder(updated));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to update order status' });
@@ -342,7 +370,7 @@ app.get('/api/orders/:idOrNumber', async (req, res) => {
   try {
     const order = await db.getOrderById(req.params.idOrNumber);
     if (!order) return res.status(404).json({ error: 'Order not found' });
-    res.json(order);
+    res.json(formatOrder(order));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to track order' });

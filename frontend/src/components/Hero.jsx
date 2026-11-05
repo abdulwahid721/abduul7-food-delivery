@@ -1,7 +1,7 @@
 import React from 'react';
 import { MapPin, Utensils, Store, Wine, List, Sparkles } from 'lucide-react';
 
-export default function Hero({ onSeeRestaurants, onViewAll, onSelectMarket, onSelectDrinks }) {
+export default function Hero({ onSeeRestaurants, onViewAll, onSelectMarket, onSelectDrinks, currentNeighborhood }) {
   return (
     <section className="relative overflow-hidden bg-stone-900 text-white min-h-[300px] sm:min-h-[380px] flex items-center justify-center">
       {/* Background Hero Image */}
@@ -49,7 +49,7 @@ export default function Hero({ onSeeRestaurants, onViewAll, onSelectMarket, onSe
                 className="w-full bg-black/55 hover:bg-black/75 backdrop-blur-md border border-white/30 hover:border-white/60 text-white px-3.5 py-2.5 rounded-lg text-xs font-semibold transition-all flex items-center justify-center md:justify-start gap-2 shadow-sm group"
               >
                 <MapPin className="w-3.5 h-3.5 text-red-400 group-hover:scale-110 transition-transform" />
-                <span>See restaurants near you</span>
+                <span>See restaurants near {currentNeighborhood?.name || 'you'}</span>
               </button>
 
               <button

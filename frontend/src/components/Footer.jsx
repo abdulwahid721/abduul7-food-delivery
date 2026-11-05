@@ -1,7 +1,7 @@
 import React from 'react';
-import { Bike, Phone, Mail, MapPin, Heart } from 'lucide-react';
+import { Bike, Phone, Mail, MapPin, Heart, ShieldCheck, Lock } from 'lucide-react';
 
-export default function Footer() {
+export default function Footer({ onOpenAdmin, onOpenPrivacy }) {
   return (
     <footer className="bg-stone-900 text-stone-300 pt-12 pb-8 border-t border-stone-800 text-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -24,7 +24,7 @@ export default function Footer() {
               Connecting food lovers in Addis Ababa with the city’s top dining spots — Totot, Kategna, Yod Abyssinia, Effoi, Moyos, Castelli, and more.
             </p>
 
-            <div className="pt-1 flex items-center gap-3">
+            <div className="pt-1 flex items-center gap-2 flex-wrap">
               <span className="inline-block px-2 py-0.5 rounded bg-stone-800 text-stone-300 font-mono text-[10px] border border-stone-700">
                 Telebirr Verified
               </span>
@@ -59,13 +59,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Contact */}
+          {/* Security & Customer Support */}
           <div className="space-y-2.5">
-            <h4 className="font-bold text-white text-xs uppercase tracking-wider">Customer Support</h4>
+            <h4 className="font-bold text-white text-xs uppercase tracking-wider">Support &amp; Governance</h4>
             <div className="space-y-2 text-[11px] text-stone-400">
               <div className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-[#a61919]" />
-                <span className="font-mono text-white">+251 91 123 4567 / +251 11 667 8901</span>
+                <span className="font-mono text-white">+251 91 123 4567</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-[#a61919]" />
@@ -73,7 +73,26 @@ export default function Footer() {
               </div>
               <div className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-[#a61919] shrink-0 mt-0.5" />
-                <span>Bole Road, Mega Building 4th Floor, Addis Ababa, Ethiopia</span>
+                <span>Bole Road, Mega Building, Addis Ababa</span>
+              </div>
+
+              {/* Quick links for Admin and Privacy Policy (PP) */}
+              <div className="pt-2 flex flex-col gap-1.5 border-t border-stone-800">
+                <button
+                  onClick={onOpenPrivacy}
+                  className="flex items-center gap-1.5 text-stone-400 hover:text-white transition text-[11px] text-left"
+                >
+                  <Lock className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Privacy Policy &amp; Data Security (PP)</span>
+                </button>
+
+                <button
+                  onClick={onOpenAdmin}
+                  className="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 transition text-[11px] text-left font-bold"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Store Admin Portal (Dispatch &amp; Orders)</span>
+                </button>
               </div>
             </div>
           </div>
@@ -82,7 +101,7 @@ export default function Footer() {
 
         {/* Bottom copyright */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-stone-500 text-[11px]">
-          <p>© {new Date().getFullYear()} Abduul Food Delivery. Crafted with love for Addis Ababa.</p>
+          <p>© {new Date().getFullYear()} Abduul Food Delivery. Addis Ababa, Ethiopia.</p>
           <p className="flex items-center gap-1">
             Made with <Heart className="w-3 h-3 text-red-500 fill-red-500" /> for Ethiopian cuisine lovers
           </p>

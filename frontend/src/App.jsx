@@ -8,11 +8,13 @@ import CheckoutModal from './components/CheckoutModal';
 import OrderTrackerModal from './components/OrderTrackerModal';
 import AuthModal from './components/AuthModal';
 import AdminModal from './components/AdminModal';
+import PrivacyPolicyModal from './components/PrivacyPolicyModal';
 import Footer from './components/Footer';
 import { RESTAURANTS as initialRestaurants, FOODS as initialFoods } from './data/mockData';
+import { ADDIS_NEIGHBORHOODS, getRestaurantDeliveryInfo } from './data/locations';
 import { api } from './services/api';
 import { useCart } from './context/CartContext';
-import { Search, Utensils, Sparkles, Filter, X } from 'lucide-react';
+import { Search, Utensils, Sparkles, MapPin, X, ArrowUpDown, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const { toast } = useCart();
@@ -21,6 +23,11 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+
+  // Delivery Neighborhood Location (Default to Bole Medhanialem)
+  const [currentNeighborhood, setCurrentNeighborhood] = useState(ADDIS_NEIGHBORHOODS[0]);
+  const [restaurantSort, setRestaurantSort] = useState('nearest'); // 'nearest', 'rating'
 
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [activeCategory, setActiveCategory] = useState('All');
@@ -67,6 +74,37 @@ export default function App() {
     }
   };
 
+  // Calculate live distance & delivery info from selected Addis neighborhood
+  const restaurantsWithDelivery = useMemo(() => {
+    const list = restaurantsList.map((r) => {
+      const info = getRestaurantDeliveryInfo(r, currentNeighborhood);
+      return {
+        ...r,
+        deliveryInfo: info,
+      };
+    });
+
+    // Find nearest restaurant
+    let minDistance = Infinity;
+    list.forEach((r) => {
+      if (r.deliveryInfo.distanceKm < minDistance) {
+        minDistance = r.deliveryInfo.distanceKm;
+      }
+    });
+
+    list.forEach((r) => {
+      r.deliveryInfo.isNearest = r.deliveryInfo.distanceKm === minDistance;
+    });
+
+    if (restaurantSort === 'nearest') {
+      return [...list].sort((a, b) => a.deliveryInfo.distanceKm - b.deliveryInfo.distanceKm);
+    }
+    if (restaurantSort === 'rating') {
+      return [...list].sort((a, b) => (Number(b.rating) || 5) - (Number(a.rating) || 5));
+    }
+    return list;
+  }, [restaurantsList, currentNeighborhood, restaurantSort]);
+
   const filteredFoods = useMemo(() => {
     return foodsList.filter((food) => {
       const restId = food.restaurantId || food.restaurant_id;
@@ -109,6 +147,11 @@ export default function App() {
         currentUser={currentUser}
         onOpenAuth={() => setIsAuthOpen(true)}
         onOpenAdmin={() => setIsAdminOpen(true)}
+        currentNeighborhood={currentNeighborhood}
+        onSelectNeighborhood={(nh) => {
+          setCurrentNeighborhood(nh);
+          setRestaurantSort('nearest');
+        }}
         onScrollToRestaurants={scrollToRestaurants}
         onFilterDrinks={() => {
           setSelectedRestaurantId(null);
@@ -126,7 +169,11 @@ export default function App() {
 
       {/* Deliver Addis Hero Section */}
       <Hero
-        onSeeRestaurants={scrollToRestaurants}
+        currentNeighborhood={currentNeighborhood}
+        onSeeRestaurants={() => {
+          setRestaurantSort('nearest');
+          scrollToRestaurants();
+        }}
         onViewAll={() => {
           setSelectedRestaurantId(null);
           setActiveCategory('All');
@@ -150,34 +197,71 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-10">
         
-        {/* Section 1: Featured Restaurants (Matching Screenshot) */}
+        {/* Section 1: Featured Restaurants */}
         <section ref={restaurantsRef} id="featured-restaurants" className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
-                Featured Addis Ababa Restaurants
-              </h2>
-              <p className="text-xs text-stone-500">
-                Real, authentic Addis Ababa restaurants delivering right to your door
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
+                  Addis Ababa Restaurants Near You
+                </h2>
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Live Distance
+                </span>
+              </div>
+              <p className="text-xs text-stone-500 flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3.5 h-3.5 text-[#a61919]" />
+                <span>
+                  Delivering to: <strong className="text-stone-800">{currentNeighborhood.name}</strong> ({currentNeighborhood.area})
+                </span>
               </p>
             </div>
 
-            {selectedRestaurantId && (
+            {/* Sort Controls */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-stone-500 font-semibold flex items-center gap-1">
+                <ArrowUpDown className="w-3 h-3 text-stone-400" /> Sort:
+              </span>
               <button
-                onClick={() => setSelectedRestaurantId(null)}
-                className="text-xs font-semibold text-[#a61919] hover:underline flex items-center gap-1"
+                onClick={() => setRestaurantSort('nearest')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                  restaurantSort === 'nearest'
+                    ? 'bg-[#a61919] text-white shadow-2xs'
+                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
+                }`}
               >
-                <span>Show all restaurants</span>
-                <X className="w-3.5 h-3.5" />
+                📍 Nearest First
               </button>
-            )}
+              <button
+                onClick={() => setRestaurantSort('rating')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                  restaurantSort === 'rating'
+                    ? 'bg-[#a61919] text-white shadow-2xs'
+                    : 'bg-white border border-stone-200 text-stone-600 hover:bg-stone-50'
+                }`}
+              >
+                ⭐ Top Rated
+              </button>
+
+              {selectedRestaurantId && (
+                <button
+                  onClick={() => setSelectedRestaurantId(null)}
+                  className="text-xs font-semibold text-[#a61919] hover:underline flex items-center gap-1 ml-2"
+                >
+                  <span>Show all</span>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
           </div>
 
+          {/* Restaurant Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {restaurantsList.map((restaurant) => (
+            {restaurantsWithDelivery.map((restaurant) => (
               <RestaurantCard
                 key={restaurant.id}
                 restaurant={restaurant}
+                deliveryInfo={restaurant.deliveryInfo}
                 isSelected={selectedRestaurantId === restaurant.id}
                 onSelect={() => handleSelectRestaurant(restaurant.id)}
               />
@@ -194,13 +278,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <Utensils className="w-5 h-5 text-[#a61919]" />
                 <h3 className="text-lg sm:text-xl font-bold text-stone-900">
-                  {selectedRestaurant ? `${selectedRestaurant.name} Menu` : 'Order Delicious Dishes'}
+                  {selectedRestaurant ? `${selectedRestaurant.name} Menu` : 'Order Authentic Dishes'}
                 </h3>
               </div>
               <p className="text-xs text-stone-500">
                 {selectedRestaurant
-                  ? `Viewing menu items for ${selectedRestaurant.name} (${selectedRestaurant.branch})`
-                  : 'Authentic Kitfo, sizzling Shekla Tibs, wood-fired pizza & smash burgers'}
+                  ? `Viewing authentic menu items from ${selectedRestaurant.name} (${selectedRestaurant.branch})`
+                  : 'Traditional Kitfo, sizzling Shekla Tibs, fasting beyaynetu, pasta, pizza & smash burgers'}
               </p>
             </div>
 
@@ -299,28 +383,42 @@ export default function App() {
       <CartDrawer />
 
       {/* Checkout Modal */}
-      <CheckoutModal />
+      <CheckoutModal
+        currentUser={currentUser}
+        currentNeighborhood={currentNeighborhood}
+      />
 
       {/* Live Order Tracker Modal */}
       <OrderTrackerModal />
 
-      {/* Authentication Modal (Login / Register / Profile) */}
+      {/* Authentication Modal (Login / Register / Profile Picture PP) */}
       <AuthModal
         isOpen={isAuthOpen}
         onClose={() => setIsAuthOpen(false)}
         user={currentUser}
         onUserChange={setCurrentUser}
         onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
 
-      {/* Admin Order Control Panel Modal */}
+      {/* Admin Order & Menu Control Panel Modal */}
       <AdminModal
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
+        foods={foodsList}
+      />
+
+      {/* Privacy Policy & Data Security Modal (PP) */}
+      <PrivacyPolicyModal
+        isOpen={isPrivacyOpen}
+        onClose={() => setIsPrivacyOpen(false)}
       />
 
       {/* Deliver Addis Footer */}
-      <Footer />
+      <Footer
+        onOpenAdmin={() => setIsAdminOpen(true)}
+        onOpenPrivacy={() => setIsPrivacyOpen(true)}
+      />
     </div>
   );
 }

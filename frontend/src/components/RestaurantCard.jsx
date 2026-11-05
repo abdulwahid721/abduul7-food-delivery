@@ -1,11 +1,15 @@
 import React from 'react';
-import { Star, Tag, Clock, Bike } from 'lucide-react';
+import { Star, Tag, Clock, Bike, MapPin } from 'lucide-react';
 
-export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
+export default function RestaurantCard({ restaurant, isSelected, onSelect, deliveryInfo }) {
   const ratingNum = Number(restaurant.rating) || 5.0;
-  const deliveryFee = restaurant.deliveryFee ?? restaurant.delivery_fee ?? 150;
   const promo = restaurant.promoBadge || restaurant.promo_badge;
-  const deliveryTime = restaurant.deliveryTime || restaurant.delivery_time || '25-35 min';
+  
+  // Use dynamically calculated delivery info from user location if available
+  const deliveryTime = deliveryInfo?.deliveryTime || restaurant.deliveryTime || restaurant.delivery_time || '25-35 min';
+  const deliveryFee = deliveryInfo?.deliveryFee ?? restaurant.deliveryFee ?? restaurant.delivery_fee ?? 150;
+  const distanceKm = deliveryInfo?.distanceKm;
+  const isNearest = deliveryInfo?.isNearest;
 
   return (
     <div
@@ -25,22 +29,38 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
             loading="lazy"
           />
+
+          {/* Distance Badge */}
+          {distanceKm !== undefined && (
+            <div className={`absolute top-2.5 left-2.5 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold shadow-xs flex items-center gap-1 ${
+              isNearest || distanceKm <= 1.5
+                ? 'bg-emerald-600 text-white ring-1 ring-emerald-300'
+                : 'bg-stone-900/80 text-white'
+            }`}>
+              <MapPin className="w-2.5 h-2.5 text-amber-300" />
+              <span>{distanceKm} km {isNearest ? '• Nearest' : ''}</span>
+            </div>
+          )}
+
+          {/* Delivery Time Badge */}
           <div className="absolute top-2.5 right-2.5 bg-white/95 backdrop-blur-md px-2 py-0.5 rounded-full text-[11px] font-bold text-stone-800 shadow-xs flex items-center gap-1">
             <Clock className="w-3 h-3 text-amber-500" />
             <span>{deliveryTime}</span>
           </div>
         </div>
 
-        {/* Details matching Deliver Addis screenshot */}
+        {/* Details matching Deliver Addis aesthetic */}
         <div className="p-3.5 sm:p-4 space-y-2">
           <div>
             <h3 className="font-bold text-sm sm:text-base text-stone-900 group-hover:text-[#a61919] transition-colors leading-snug line-clamp-1">
-              {restaurant.name} <span className="text-stone-500 font-normal text-xs">({restaurant.branch})</span>
+              {restaurant.name}
             </h3>
-            <p className="text-[11px] text-stone-500">{restaurant.cuisine}</p>
+            <p className="text-[11px] text-stone-500">
+              📍 {restaurant.branch} • {restaurant.cuisine}
+            </p>
           </div>
 
-          {/* Promo Badge matching screenshot */}
+          {/* Promo Badge matching Deliver Addis */}
           {promo && (
             <div className="bg-red-50/80 border border-red-200 text-red-700 px-2.5 py-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-1.5">
               <Tag className="w-3 h-3 text-red-600 shrink-0" />
@@ -74,8 +94,8 @@ export default function RestaurantCard({ restaurant, isSelected, onSelect }) {
 
       {/* Card Footer */}
       <div className="px-3.5 pb-3.5 pt-2 border-t border-stone-100 flex items-center justify-between text-[11px]">
-        <span className="text-stone-400 flex items-center gap-1 font-medium">
-          <Bike className="w-3 h-3 text-[#a61919]" /> {deliveryFee} ብር
+        <span className="text-stone-500 flex items-center gap-1 font-medium">
+          <Bike className="w-3 h-3 text-[#a61919]" /> {deliveryFee} ብር delivery
         </span>
         <span className={`font-bold transition-colors ${
           isSelected ? 'text-[#a61919]' : 'text-stone-700 group-hover:text-[#a61919]'

@@ -1,17 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { X, CheckCircle, Truck, MapPin, Phone, User, Smartphone, Banknote, ShieldCheck } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { ADDIS_NEIGHBORHOODS } from '../data/locations';
 
-export default function CheckoutModal() {
+export default function CheckoutModal({ currentUser, currentNeighborhood }) {
   const { isCheckoutOpen, setIsCheckoutOpen, total, subtotal, deliveryFee, tax, placeOrder } = useCart();
 
-  const [customerName, setCustomerName] = useState('Alex / ዮናስ');
-  const [phone, setPhone] = useState('0911 23 45 67');
-  const [subcity, setSubcity] = useState('Bole Medhanialem');
-  const [address, setAddress] = useState('Bole Medhanialem, House #342');
+  const [customerName, setCustomerName] = useState(currentUser?.name || 'Alex / ዮናስ');
+  const [phone, setPhone] = useState(currentUser?.phone || '0911 23 45 67');
+  const [subcity, setSubcity] = useState(currentNeighborhood?.name || 'Bole Medhanialem');
+  const [address, setAddress] = useState(currentUser?.address || 'Cameroon St, House #342');
   const [paymentMethod, setPaymentMethod] = useState('telebirr');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.name) setCustomerName(currentUser.name);
+      if (currentUser.phone) setPhone(currentUser.phone);
+      if (currentUser.address) setAddress(currentUser.address);
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (currentNeighborhood) {
+      setSubcity(currentNeighborhood.name);
+    }
+  }, [currentNeighborhood]);
 
   if (!isCheckoutOpen) return null;
 
@@ -25,11 +40,12 @@ export default function CheckoutModal() {
       } catch (err) {}
 
       placeOrder({
-        customerName,
-        phone,
-        subcity,
-        address,
+        customerName: customerName.trim(),
+        phone: phone.trim(),
+        subcity: subcity.trim(),
+        address: address.trim(),
         paymentMethod,
+        userId: currentUser?.id || null,
       });
 
       setIsSubmitting(false);
@@ -49,8 +65,8 @@ export default function CheckoutModal() {
               <Truck className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-stone-900">Checkout & Delivery</h3>
-              <p className="text-[11px] text-stone-500">Estimated delivery: 25 - 35 mins</p>
+              <h3 className="font-bold text-base text-stone-900">Checkout &amp; Delivery</h3>
+              <p className="text-[11px] text-stone-500">Fast delivery across Addis Ababa (25 - 35 mins)</p>
             </div>
           </div>
 
@@ -86,7 +102,7 @@ export default function CheckoutModal() {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Phone Number</label>
+                <label className="block text-[11px] font-semibold text-stone-700 mb-0.5">Phone Number (Telebirr)</label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400" />
                   <input
@@ -106,16 +122,13 @@ export default function CheckoutModal() {
               <select
                 value={subcity}
                 onChange={(e) => setSubcity(e.target.value)}
-                className="w-full text-xs border border-stone-200 rounded-lg px-2.5 py-2 text-stone-900 focus:outline-none focus:border-[#a61919] bg-white"
+                className="w-full text-xs border border-stone-200 rounded-lg px-2.5 py-2 text-stone-900 focus:outline-none focus:border-[#a61919] bg-white font-medium"
               >
-                <option value="Bole Medhanialem">Bole Medhanialem</option>
-                <option value="Bole Atlas">Bole Atlas</option>
-                <option value="Bisrate Gebriel">Bisrate Gebriel</option>
-                <option value="Summit">Summit</option>
-                <option value="Kazanchis">Kazanchis</option>
-                <option value="Sarbet">Sarbet</option>
-                <option value="Megenagna">Megenagna</option>
-                <option value="CMC Michael">CMC Michael</option>
+                {ADDIS_NEIGHBORHOODS.map((nh) => (
+                  <option key={nh.id} value={nh.name}>
+                    {nh.name} ({nh.area})
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -127,7 +140,7 @@ export default function CheckoutModal() {
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="w-full text-xs border border-stone-200 rounded-lg px-2.5 py-2 text-stone-900 focus:outline-none focus:border-[#a61919]"
-                placeholder="House number, landmark, office"
+                placeholder="House number, landmark, office, building"
               />
             </div>
           </div>
@@ -135,7 +148,7 @@ export default function CheckoutModal() {
           {/* Payment Method */}
           <div className="space-y-3 pt-2 border-t border-stone-100">
             <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">
-              2. Payment Method
+              2. Payment Provider (PP)
             </h4>
 
             <div className="grid grid-cols-3 gap-2">
@@ -144,11 +157,11 @@ export default function CheckoutModal() {
                 onClick={() => setPaymentMethod('telebirr')}
                 className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
                   paymentMethod === 'telebirr'
-                    ? 'border-[#a61919] bg-red-50 text-[#a61919] font-bold'
-                    : 'border-stone-200 text-stone-600'
+                    ? 'border-[#a61919] bg-red-50 text-[#a61919] font-bold shadow-2xs'
+                    : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                 }`}
               >
-                <Smartphone className="w-4 h-4" />
+                <Smartphone className="w-4 h-4 text-amber-600" />
                 <span className="text-[11px]">Telebirr</span>
               </button>
 
@@ -157,11 +170,11 @@ export default function CheckoutModal() {
                 onClick={() => setPaymentMethod('cbe_birr')}
                 className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
                   paymentMethod === 'cbe_birr'
-                    ? 'border-purple-600 bg-purple-50 text-purple-900 font-bold'
-                    : 'border-stone-200 text-stone-600'
+                    ? 'border-purple-600 bg-purple-50 text-purple-900 font-bold shadow-2xs'
+                    : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                 }`}
               >
-                <ShieldCheck className="w-4 h-4" />
+                <ShieldCheck className="w-4 h-4 text-purple-600" />
                 <span className="text-[11px]">CBE Birr</span>
               </button>
 
@@ -170,13 +183,32 @@ export default function CheckoutModal() {
                 onClick={() => setPaymentMethod('cash')}
                 className={`p-2.5 rounded-xl border text-center transition flex flex-col items-center gap-1 ${
                   paymentMethod === 'cash'
-                    ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-bold'
-                    : 'border-stone-200 text-stone-600'
+                    ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-bold shadow-2xs'
+                    : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                 }`}
               >
-                <Banknote className="w-4 h-4" />
+                <Banknote className="w-4 h-4 text-emerald-600" />
                 <span className="text-[11px]">Cash</span>
               </button>
+            </div>
+
+            {/* Payment Specific Guidance */}
+            <div className="bg-stone-50 p-2.5 rounded-xl border border-stone-200 text-[11px] text-stone-600">
+              {paymentMethod === 'telebirr' && (
+                <p>
+                  📱 <strong>Telebirr:</strong> Pay upon driver arrival or verify using Telebirr merchant code <strong>#84920</strong> (Abduul Delivery).
+                </p>
+              )}
+              {paymentMethod === 'cbe_birr' && (
+                <p>
+                  🏦 <strong>CBE Birr:</strong> Pay via CBE Mobile Banking or CBE Birr account <strong>10008492019</strong>.
+                </p>
+              )}
+              {paymentMethod === 'cash' && (
+                <p>
+                  💵 <strong>Cash on Delivery:</strong> Please prepare exact cash in Ethiopian Birr (`ብር`) for the courier upon arrival.
+                </p>
+              )}
             </div>
           </div>
 
@@ -187,11 +219,11 @@ export default function CheckoutModal() {
               <span className="font-mono">{subtotal.toLocaleString()} ብር</span>
             </div>
             <div className="flex justify-between">
-              <span>Delivery &amp; VAT</span>
+              <span>Delivery &amp; 15% VAT</span>
               <span className="font-mono">{(deliveryFee + tax).toLocaleString()} ብር</span>
             </div>
             <div className="flex justify-between font-black text-sm text-stone-900 pt-1 border-t border-stone-200">
-              <span>Total</span>
+              <span>Total Payable</span>
               <span className="font-mono text-[#a61919]">{total.toLocaleString()} ብር</span>
             </div>
           </div>
@@ -203,7 +235,7 @@ export default function CheckoutModal() {
             className="w-full bg-[#a61919] hover:bg-[#881414] disabled:opacity-50 text-white py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md transition"
           >
             {isSubmitting ? (
-              <span>Placing Order...</span>
+              <span>Placing Order with Dispatch...</span>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4" />

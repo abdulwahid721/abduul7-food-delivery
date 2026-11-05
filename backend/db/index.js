@@ -585,8 +585,34 @@ export const db = {
 
   async getOrders() {
     if (usePostgres && pool) {
-      const res = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
-      return res.rows;
+      try {
+        const res = await pool.query(`
+          SELECT 
+            o.*,
+            COALESCE(
+              json_agg(
+                json_build_object(
+                  'id', oi.id,
+                  'food_id', oi.food_id,
+                  'name', oi.name,
+                  'amharic_name', oi.amharic_name,
+                  'price', oi.price,
+                  'quantity', oi.quantity
+                )
+              ) FILTER (WHERE oi.id IS NOT NULL),
+              '[]'
+            ) AS items
+          FROM orders o
+          LEFT JOIN order_items oi ON o.id = oi.order_id
+          GROUP BY o.id
+          ORDER BY o.created_at DESC
+        `);
+        return res.rows;
+      } catch (err) {
+        console.error('getOrders query error, falling back:', err);
+        const res = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+        return res.rows;
+      }
     }
     const data = JSON.parse(fs.readFileSync(DB_FILE_PATH, 'utf-8'));
     return data.orders;
